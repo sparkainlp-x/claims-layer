@@ -17,7 +17,7 @@ from pathlib import Path
 import random
 import statistics
 
-from claims_layer import Claim, build_passport, save_passport
+from claims_layer import Claim, build_passport, save_passport, verify_passport
 
 HERE = Path(__file__).parent
 SUBJ = HERE / "demo_subject"
@@ -89,8 +89,23 @@ def main():
                         "demo_subject", tampered, SUBJ)
     show("Passport 2 — one inflated number", p2)
 
+    ok1, _ = verify_passport(p1, SUBJ)
+    print(f"--- Re-verify passport 1 against the evidence: {ok1}")
+    edited = json.loads(json.dumps(p1))
+    edited["claims"][0]["text"] = edited["claims"][0]["text"].replace("Dataset mean", "Mean")
+    ok_edit, why_edit = verify_passport(edited, SUBJ)
+    print(f"--- Passport 1 with an edited claim, seal not recomputed: {ok_edit} {why_edit}")
+    csv = SUBJ / "sensor_data.csv"
+    original = csv.read_bytes()
+    csv.write_bytes(original + b"\n9.999999")
+    ok_file, why_file = verify_passport(p1, SUBJ)
+    csv.write_bytes(original)
+    print(f"--- Passport 1 after one value is appended to the data file: {ok_file} {why_file}")
+    print()
+
     ok = (p1["sealed"] and not p2["sealed"]
-          and p2["claims"][0]["status"] == "REFUTED")
+          and p2["claims"][0]["status"] == "REFUTED"
+          and ok1 and not ok_edit and not ok_file)
     print("RESULT:", "PASS -- honest passport SEALED, tampered passport REFUTED and UNSEALED"
           if ok else "FAIL")
     return 0 if ok else 1
