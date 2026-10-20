@@ -5,8 +5,8 @@ Three check kinds, in descending strength:
 STRONG
   file_sha256  {path, sha256}
       The cited file's SHA-256 must equal the recorded digest.
-      Proves the evidence is exactly what the claim cites --
-      provenance and integrity.
+      Shows the evidence is byte-identical to what the claim cites
+      (integrity since the digest was taken).
   json_value   {path, key, expected, tol?}
       A value inside a JSON document (dotted key path) must equal
       `expected` -- numerically within `tol` when both are numbers,
@@ -15,7 +15,7 @@ STRONG
 
 WEAK
   text_contains {path, needle}
-      The cited text must contain the needle. Proves only that a
+      The cited text must contain the needle. Shows only that a
       source mentions it -- citation support, not truth. A claim
       backed only by weak checks can reach SUPPORTED, never VERIFIED.
 

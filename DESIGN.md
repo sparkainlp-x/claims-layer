@@ -1,4 +1,4 @@
-# DESIGN — Deep think: why a claims layer, and what it can and cannot do
+# Design: why a claims layer, and what it can and cannot do
 
 ## The problem, precisely
 
@@ -14,15 +14,17 @@ Existing fixes attack content (fact-checking) or speakers
 (reputation). Both are slow, centralized, and adversarial. The
 claims layer attacks the *packaging*: make the kind, the evidence
 tag, and the verification state part of the claim itself,
-machine-readable, checkable by anyone in milliseconds.
+machine-readable, and checkable by anyone who has the cited records.
 
 ## The model
 
 A claim carries:
 
 - **Kind** — ANNOUNCEMENT / MODEL / MEASUREMENT / HYPOTHESIS /
-  INFERENCE (taxonomy from quantum-claims-passport). Kinds cannot be
-  upgraded by quoting: a passport preserves them verbatim.
+  INFERENCE (taxonomy from quantum-claims-passport). The author
+  chooses the kind; the passport then keeps it verbatim. A claim that
+  states a number cannot seal unless it is VERIFIED, whatever its kind
+  (HYPOTHESIS excepted).
 - **Evidence tag** — SYNTHETIC / REPORTED / TARGET / UNRUN. What
   stands behind the claim, in the org's existing convention.
 - **Checks** — machine-runnable verifications against cited records:
@@ -30,12 +32,14 @@ A claim carries:
   recompute-the-claim pattern from sparkholo), textual citations
   (weak support).
 - **Status** — VERIFIED / SUPPORTED / UNVERIFIED / REFUTED, assigned
-  by running the checks. **Never by the author.** This asymmetry is
-  the whole design: authors propose, checks dispose.
+  by running the checks, not typed in by the author. The author does
+  still write the checks and their expected values, so the status is
+  only as independent as those checks (see limits).
 
 A passport seals when nothing is refuted and every measurement is
-verified. The seal is a hash of the canonical record — no timestamps,
-so it is re-checkable forever.
+verified. The seal is a hash of the canonical record and of every
+evidence file the checks read, with no timestamps, so anyone holding
+the same evidence can re-check it with `verify_passport()`.
 
 ## Why these semantics
 
@@ -52,9 +56,10 @@ so it is re-checkable forever.
    disagree. Absolute adverbs ("proves", "guaranteed") are refused
    for the same reason: in this system, strength comes from checks.
 4. **No wall-clock in the seal.** sparkholo's lesson: identical
-   inputs, identical hash. A passport from 2026 verifies in 2036.
+   inputs, identical hash, so a passport can be re-checked later
+   against the same evidence.
 
-## What deployment looks like
+## Possible uses (not implemented or tested here)
 
 - **Journals / preprint servers:** a passport attached to a paper's
   headline claims; MEASUREMENT claims check against deposited run
@@ -71,7 +76,7 @@ so it is re-checkable forever.
 
 ## The honest limits (printed on every passport)
 
-1. **A seal proves consistency and provenance, not ground truth.**
+1. **A seal shows consistency and provenance, not ground truth.**
    Garbage data, honestly hashed, seals fine. The layer stops
    *laundering* (kind-swapping, number-inflation after the fact,
    citation theater) — it does not stop fabrication at the source.
@@ -90,10 +95,17 @@ so it is re-checkable forever.
    implementation under AGPL, with the demos and the negative cases
    included, and let one institution go first.
 
-## Relation to the solutions map
+5. **The seal is an unkeyed hash, not a signature.** Anyone who edits a
+   passport can recompute it. `verify_passport()` catches edits that do
+   not also rewrite the evidence, but a forger who changes claims and
+   evidence together is not caught. Sign the seal separately when the
+   author may not be trusted.
+6. **The author writes the checks.** Tolerances are capped (at most 1%
+   of the expected value) and numbers in the claim text must match the
+   checked value, but a digest the author takes from their own file
+   only shows the file has not changed since.
+7. **The firewall is a fixed phrase list.** Paraphrases and
+   misspellings pass it. It refuses negated phrases too ("not
+   guaranteed"), which is the safe direction.
 
-This is Solution 1 (information integrity) made executable. The same
-passport machinery is the natural envelope for Solution 2 (agent
-actions as claims with ledgers), Solution 6 (energy claims gated by
-eligibility), and Solution 8 (publication passports) — one format,
-four problems.
+All examples and demos use SYNTHETIC data.

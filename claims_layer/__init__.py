@@ -1,13 +1,14 @@
 """Claims Layer: machine-checkable evidence passports for claims.
 
-The missing layer under public information: any consequential claim
+A small, standard-library reference implementation: any consequential claim
 -- a study result, a product spec, an AI summary, a benchmark number
 -- ships with a passport that states what kind of claim it is
 (announcement / model / measurement / hypothesis / inference), what
 evidence stands behind it (SYNTHETIC / REPORTED / TARGET / UNRUN),
 and which machine-runnable checks were run against it, with the
 results. Statuses (VERIFIED / SUPPORTED / UNVERIFIED / REFUTED) are
-assigned by the checks, never by the author. A passport seals only
+computed by running the checks, not typed in by the author (who does
+still write the checks). A passport seals only
 when nothing is refuted and every measurement is verified.
 
 Combined from the sparkainlp-x portfolio: the claim-kind taxonomy of
