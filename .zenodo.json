@@ -1,0 +1,62 @@
+{
+  "title": "Claims Layer: machine-checkable evidence passports for claims",
+  "version": "0.1.0",
+  "upload_type": "software",
+  "description": "<p>Standard-library Python reference implementation of machine-checkable evidence passports for claims. Each claim carries a kind (announcement, model, measurement, hypothesis, inference), an evidence tag (SYNTHETIC, REPORTED, TARGET, UNRUN) and machine-run checks (file digests, run-record values with capped tolerance and text binding, textual citations). Statuses are computed by the checks. A passport seals only when nothing is refuted and every measurement and numeric claim is verified; the seal is a SHA-256 over the record and its evidence files, and verify_passport() re-checks it. A seal shows consistency and provenance, not ground truth, and is an unkeyed hash, not a signature. Demos use SYNTHETIC data.</p>",
+  "creators": [
+    {
+      "name": "Brisson, Jean-François",
+      "orcid": "0009-0000-9778-5374",
+      "affiliation": "Spark AI NLP, Fredericton, New Brunswick, Canada"
+    }
+  ],
+  "license": "AGPL-3.0-only",
+  "access_right": "open",
+  "language": "eng",
+  "keywords": [
+    "claims verification",
+    "evidence passport",
+    "provenance",
+    "fail-closed",
+    "reproducibility",
+    "synthetic data",
+    "Python"
+  ],
+  "related_identifiers": [
+    {
+      "identifier": "10.5281/zenodo.23167801",
+      "relation": "references",
+      "scheme": "doi",
+      "resource_type": "software"
+    },
+    {
+      "identifier": "10.5281/zenodo.23165143",
+      "relation": "references",
+      "scheme": "doi",
+      "resource_type": "software"
+    },
+    {
+      "identifier": "10.5281/zenodo.23067465",
+      "relation": "references",
+      "scheme": "doi",
+      "resource_type": "software"
+    },
+    {
+      "identifier": "https://github.com/sparkainlp-x/claims-layer",
+      "relation": "isSupplementTo",
+      "scheme": "url"
+    }
+  ],
+  "references": [
+    "Brisson, J.-F. (2026). Quantum Claims Evidence Passport [Software]. Zenodo. https://doi.org/10.5281/zenodo.23167801",
+    "Brisson, J.-F. (2026). Evidence Passport [Software]. Zenodo. https://doi.org/10.5281/zenodo.23165143",
+    "Brisson, J.-F. (2026). Measurement Trail [Software]. Zenodo. https://doi.org/10.5281/zenodo.23067465",
+    "Brisson, J.-F. (2026). Coherent Sequence Wave Computer [Software]. https://github.com/sparkainlp-x/digital-to-wave-cseq"
+  ],
+  "notes": "Evidence status: demos use SYNTHETIC data. Acknowledgement: demo_cseq.py passports a digital-to-wave-cseq run, whose C_seq readout comes from Mun Seok Lee's Coherent Sequence theory; he has not reviewed or endorsed this software.",
+  "communities": [
+    {
+      "identifier": "spark-ai-nlp"
+    }
+  ]
+}

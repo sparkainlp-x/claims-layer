@@ -1,28 +1,50 @@
 cff-version: 1.2.0
-title: Claims Layer
-version: 0.1.0
-date-released: 2026-10-20
+message: "If you use this software, please cite it using the metadata from this file."
+title: "Claims Layer: machine-checkable evidence passports for claims"
+type: software
 authors:
-  - family-names: Lee
-    given-names: Mun Seok
+  - family-names: "Brisson"
+    given-names: "Jean-François"
+    orcid: "https://orcid.org/0009-0000-9778-5374"
+    affiliation: "Spark AI NLP, Fredericton, New Brunswick, Canada"
+version: 0.1.0
 license: AGPL-3.0-only
-repository-code: https://github.com/sparkainlp-x
+repository-code: "https://github.com/sparkainlp-x/claims-layer"
 abstract: >-
-  Machine-checkable evidence passports for public claims. Each claim
-  carries its kind (announcement, model, measurement, hypothesis,
-  inference), an evidence tag (synthetic, reported, target, unrun),
-  and machine-runnable checks (file digests, run-record values,
-  textual citations). Statuses (verified, supported, unverified,
-  refuted) are assigned by the checks, never by the author; a
-  passport seals only when nothing is refuted and every measurement
-  is verified. Combines patterns from quantum-claims-passport,
-  evidence-passport, sparkholo-coherence-agent, spark-iis-api, and
-  measurement-trail. A seal proves consistency and provenance, not
-  ground truth.
+  Standard-library Python reference implementation of machine-checkable evidence passports for claims. Each claim carries a kind (announcement, model, measurement, hypothesis, inference), an evidence tag (SYNTHETIC, REPORTED, TARGET, UNRUN) and machine-run checks (file digests, run-record values with capped tolerance and text binding, textual citations). Statuses are computed by the checks. A passport seals only when nothing is refuted and every measurement and numeric claim is verified; the seal is a SHA-256 over the record and its evidence files, and verify_passport() re-checks it. A seal shows consistency and provenance, not ground truth, and is an unkeyed hash, not a signature. Demos use SYNTHETIC data.
 keywords:
-  - claims-verification
-  - evidence-passport
-  - provenance
-  - misinformation
-  - reproducibility
-  - fail-closed
+  - "claims-verification"
+  - "evidence-passport"
+  - "provenance"
+  - "fail-closed"
+  - "reproducibility"
+  - "synthetic-data"
+references:
+  - type: software
+    title: "Quantum Claims Evidence Passport"
+    authors:
+      - family-names: "Brisson"
+        given-names: "Jean-François"
+    doi: "10.5281/zenodo.23167801"
+    notes: "Source of the claim-kind taxonomy."
+  - type: software
+    title: "Evidence Passport"
+    authors:
+      - family-names: "Brisson"
+        given-names: "Jean-François"
+    doi: "10.5281/zenodo.23165143"
+    notes: "Manifest-to-passport predecessor."
+  - type: software
+    title: "Measurement Trail"
+    authors:
+      - family-names: "Brisson"
+        given-names: "Jean-François"
+    doi: "10.5281/zenodo.23067465"
+    notes: "Hash-based provenance predecessor."
+  - type: software
+    title: "Coherent Sequence Wave Computer"
+    authors:
+      - family-names: "Brisson"
+        given-names: "Jean-François"
+    repository-code: "https://github.com/sparkainlp-x/digital-to-wave-cseq"
+    notes: "Run record used by demo_cseq.py; its C_seq readout comes from Mun Seok Lee's Coherent Sequence theory (acknowledged, not an author here)."
