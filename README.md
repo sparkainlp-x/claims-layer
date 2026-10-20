@@ -57,7 +57,7 @@ A single in-clause negation exempts a phrase ("does not prove"). "Not only", dou
 | development (used for tuning) | 43/43 | 0/30 |
 | held-out (written before tuning) | 25/25 | 2/25 |
 
-The two held-out false refusals are "The guarantee section of the licence disclaims warranty." and "The validation set has 200 points.". **These rates are optimistic:** I wrote both corpora, so neither is independent. Bypass probes tried afterwards found five sentences that still pass, for example "The effect is beyond question." and "It works, period." They are kept as documented misses in the tests. No word list catches everything.
+The two held-out false refusals are "The guarantee section of the licence disclaims warranty." and "The validation set has 200 points.". **These rates are optimistic:** both corpora were written by the project author, so neither is independent. Bypass probes tried afterwards found five sentences that still pass, for example "The effect is beyond question." and "It works, period." They are kept as documented misses in the tests. No word list catches everything.
 
 ## Sealing rules (fail-closed)
 
