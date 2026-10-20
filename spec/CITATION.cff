@@ -1,0 +1,28 @@
+cff-version: 1.2.0
+title: Claims Layer
+version: 0.1.0
+date-released: 2026-10-20
+authors:
+  - family-names: Lee
+    given-names: Mun Seok
+license: AGPL-3.0-only
+repository-code: https://github.com/sparkainlp-x
+abstract: >-
+  Machine-checkable evidence passports for public claims. Each claim
+  carries its kind (announcement, model, measurement, hypothesis,
+  inference), an evidence tag (synthetic, reported, target, unrun),
+  and machine-runnable checks (file digests, run-record values,
+  textual citations). Statuses (verified, supported, unverified,
+  refuted) are assigned by the checks, never by the author; a
+  passport seals only when nothing is refuted and every measurement
+  is verified. Combines patterns from quantum-claims-passport,
+  evidence-passport, sparkholo-coherence-agent, spark-iis-api, and
+  measurement-trail. A seal proves consistency and provenance, not
+  ground truth.
+keywords:
+  - claims-verification
+  - evidence-passport
+  - provenance
+  - misinformation
+  - reproducibility
+  - fail-closed
