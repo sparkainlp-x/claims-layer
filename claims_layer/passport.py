@@ -34,26 +34,65 @@ distinguish VERIFIED from merely SUPPORTED.
 """
 
 import hashlib
+import hmac
 import html
 import json
+import os
 import re
 
 from .checks import claim_status, resolve_inside
 from .firewall import FirewallViolation, screen_passport
 
-PROTOCOL = "claims-layer/0.1.0"
+PROTOCOL = "claims-layer/0.2.0"
+KNOWN_PROTOCOLS = ("claims-layer/0.1.0", "claims-layer/0.2.0")
+KEY_ENV = "CLAIMS_LAYER_SEAL_KEY"
+_KEY_ID_LABEL = b"claims-layer key id v1"
 _HAS_NUMBER = re.compile(r"\d")
 SEAL_MEANING = (
     "Sealed: every claim's checks were run and passed, no claim is "
     "REFUTED, every MEASUREMENT claim and every non-hypothesis claim "
     "stating a number is VERIFIED. A seal shows consistency and "
     "provenance of this record, not the ground truth of the underlying "
-    "data. It is an unkeyed hash, not a signature."
+    "data. An unkeyed (sha256) seal can be recomputed by anyone who edits "
+    "the passport; an hmac-sha256 seal can be recomputed by anyone who "
+    "holds the shared key. Neither is a public-key signature."
 )
 
 
-def build_passport(title, subject, claims, base_dir):
-    """Verify claims and build the passport dict (sealed or not)."""
+def key_from_env(name=KEY_ENV):
+    """Return the seal key from an environment variable as bytes, or None."""
+    value = os.environ.get(name)
+    return value.encode("utf-8") if value else None
+
+
+def _key_bytes(key):
+    if key is None:
+        return None
+    if isinstance(key, str):
+        key = key.encode("utf-8")
+    if not isinstance(key, (bytes, bytearray)) or len(key) < 16:
+        raise ValueError("seal key must be at least 16 bytes")
+    return bytes(key)
+
+
+def key_id(key):
+    """Short public fingerprint of a key (HMAC of a fixed label).
+
+    It lets a verifier tell which key was used without revealing it.
+    """
+    return hmac.new(_key_bytes(key), _KEY_ID_LABEL, hashlib.sha256).hexdigest()[:16]
+
+
+def build_passport(title, subject, claims, base_dir, key=None, protocol=PROTOCOL):
+    """Verify claims and build the passport dict (sealed or not).
+
+    With key (bytes or str, at least 16 bytes) the passport also carries an
+    HMAC-SHA256 seal over the same canonical record. The key itself is
+    never stored; only its fingerprint (key_id) is.
+    """
+    if protocol not in KNOWN_PROTOCOLS:
+        raise ValueError(f"unknown protocol: {protocol}")
+    key = _key_bytes(key)
     violations = screen_passport(claims)
     if violations:
         raise FirewallViolation(f"claims firewall refused passport: {violations}")
@@ -75,7 +114,7 @@ def build_passport(title, subject, claims, base_dir):
     sealed = not reasons
 
     payload = {
-        "protocol": PROTOCOL,
+        "protocol": protocol,
         "title": title,
         "subject": subject,
         "claims": entries,
@@ -83,18 +122,34 @@ def build_passport(title, subject, claims, base_dir):
         "unsealed_reasons": reasons,
         "evidence_sha256": _evidence_digests(claims, base_dir),
     }
-    return {**payload, "seal_sha256": compute_seal(payload), "seal_meaning": SEAL_MEANING}
+    if protocol != "claims-layer/0.1.0":
+        payload["seal_type"] = "hmac-sha256" if key else "sha256"
+        payload["key_id"] = key_id(key) if key else None
+    out = {**payload, "seal_sha256": compute_seal(payload), "seal_meaning": SEAL_MEANING}
+    if key:
+        out["seal_hmac_sha256"] = compute_hmac(payload, key)
+    return out
 
 
 _SEALED_KEYS = ("protocol", "title", "subject", "claims", "sealed",
                 "unsealed_reasons", "evidence_sha256")
+_SEALED_KEYS_V2 = _SEALED_KEYS + ("seal_type", "key_id")
+
+
+def _canonical(passport):
+    keys = _SEALED_KEYS if passport.get("protocol") == "claims-layer/0.1.0" else _SEALED_KEYS_V2
+    payload = {k: passport[k] for k in keys}
+    return json.dumps(payload, sort_keys=True, separators=(",", ":"), allow_nan=False).encode("utf-8")
 
 
 def compute_seal(passport):
-    """SHA-256 over the canonical sealed fields of a passport dict."""
-    payload = {k: passport[k] for k in _SEALED_KEYS}
-    canonical = json.dumps(payload, sort_keys=True, separators=(",", ":"), allow_nan=False)
-    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+    """Unkeyed SHA-256 over the canonical sealed fields of a passport dict."""
+    return hashlib.sha256(_canonical(passport)).hexdigest()
+
+
+def compute_hmac(passport, key):
+    """HMAC-SHA256 over the same canonical sealed fields."""
+    return hmac.new(_key_bytes(key), _canonical(passport), hashlib.sha256).hexdigest()
 
 
 def _evidence_digests(claims, base_dir):
@@ -111,8 +166,13 @@ def _evidence_digests(claims, base_dir):
     return out
 
 
-def verify_passport(passport, base_dir):
+def verify_passport(passport, base_dir, key=None):
     """Re-check a passport. Returns (ok, problems).
+
+    0. Keyed passports (seal_type hmac-sha256) need key: the key's
+       fingerprint must match key_id and the HMAC must match, compared in
+       constant time. If key is given, an unkeyed passport is refused, so
+       stripping the HMAC does not downgrade the check.
 
     1. The stored seal must match the sealed fields (detects edits made
        without recomputing the seal).
@@ -124,11 +184,23 @@ def verify_passport(passport, base_dir):
 
     problems = []
     try:
-        if compute_seal(passport) != passport.get("seal_sha256"):
+        key = _key_bytes(key)
+        keyed = passport.get("seal_type") == "hmac-sha256"
+        if keyed and key is None:
+            problems.append("passport has a keyed seal; a key is needed to verify it")
+        if key is not None:
+            if not keyed:
+                problems.append("a key was given but the passport has no keyed seal")
+            elif not hmac.compare_digest(str(passport.get("key_id")), key_id(key)):
+                problems.append("key_id does not match the given key")
+            elif not hmac.compare_digest(str(passport.get("seal_hmac_sha256", "")), compute_hmac(passport, key)):
+                problems.append("keyed seal does not match the passport contents")
+        if not hmac.compare_digest(str(passport.get("seal_sha256", "")), compute_seal(passport)):
             problems.append("seal does not match the passport contents")
         claims = [Claim(c["id"], c["text"], c["kind"], c["tag"], c.get("checks"), c.get("sources"))
                   for c in passport["claims"]]
-        rebuilt = build_passport(passport["title"], passport["subject"], claims, base_dir)
+        rebuilt = build_passport(passport["title"], passport["subject"], claims, base_dir,
+                                 key=key if keyed else None, protocol=passport["protocol"])
         if rebuilt["seal_sha256"] != passport.get("seal_sha256"):
             for k in ("evidence_sha256", "claims", "sealed"):
                 if rebuilt[k] != passport.get(k):
@@ -167,7 +239,9 @@ def render_html(p):
             f"<td><small>{checks}</small></td></tr>"
         )
     seal_badge = ("SEALED" if p["sealed"] else "UNSEALED") + \
-        f" — sha256 {p['seal_sha256'][:16]}…"
+        f" — {html.escape(p.get('seal_type', 'sha256'))} {p['seal_sha256'][:16]}…"
+    if p.get("key_id"):
+        seal_badge += f" (key id {html.escape(p['key_id'])})"
     reasons = "".join(f"<li>{html.escape(r)}</li>" for r in p["unsealed_reasons"])
     return f"""<!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8">
