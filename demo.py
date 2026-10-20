@@ -14,7 +14,8 @@ import json
 import shutil
 from pathlib import Path
 
-import numpy as np
+import random
+import statistics
 
 from claims_layer import Claim, build_passport, save_passport
 
@@ -26,15 +27,15 @@ def build_subject():
     if SUBJ.exists():
         shutil.rmtree(SUBJ)
     SUBJ.mkdir()
-    rng = np.random.default_rng(11)
-    data = rng.normal(2.50, 0.40, 200)
+    rng = random.Random(11)
+    data = [rng.gauss(2.50, 0.40) for _ in range(200)]
     csv = SUBJ / "sensor_data.csv"
     csv.write_text("\n".join(f"{v:.6f}" for v in data), encoding="utf-8")
     record = {
         "experiment": "synthetic sensor characterisation",
-        "n": int(data.size),
-        "mean": float(data.mean()),
-        "std": float(data.std()),
+        "n": len(data),
+        "mean": statistics.fmean(data),
+        "std": statistics.pstdev(data),
         "data_sha256": hashlib.sha256(csv.read_bytes()).hexdigest(),
     }
     (SUBJ / "run_record.json").write_text(json.dumps(record, indent=2), encoding="utf-8")
