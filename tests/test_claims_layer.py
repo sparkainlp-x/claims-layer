@@ -157,7 +157,7 @@ def test_unkeyed_seal_limit_is_documented():
     """A forger who rewrites claims AND evidence consistently is not caught."""
     from claims_layer.passport import SEAL_MEANING
 
-    assert "not a signature" in SEAL_MEANING
+    assert "public-key signature" in SEAL_MEANING
 
 
 # --- firewall ----------------------------------------------------------------
@@ -218,7 +218,7 @@ def test_demo_cseq_passes(monkeypatch, tmp_path):
 def test_stdlib_only():
     import ast
 
-    stdlib = {"hashlib", "json", "math", "re", "html", "pathlib", "random", "statistics",
+    stdlib = {"hashlib", "hmac", "unicodedata", "json", "math", "re", "html", "pathlib", "random", "statistics",
               "shutil", "os", "subprocess", "sys", "tempfile"}
     for f in list((ROOT / "claims_layer").glob("*.py")) + [ROOT / "demo.py", ROOT / "demo_cseq.py"]:
         for node in ast.walk(ast.parse(f.read_text(encoding="utf-8"))):

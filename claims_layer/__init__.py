@@ -25,7 +25,16 @@ unchanged. It does not prove the underlying data is true.
 from .model import Claim
 from .checks import claim_status, run_check
 from .firewall import FirewallViolation, screen_claim, screen_passport
-from .passport import build_passport, compute_seal, render_html, save_passport, verify_passport
+from .passport import (
+    build_passport,
+    compute_hmac,
+    compute_seal,
+    key_from_env,
+    key_id,
+    render_html,
+    save_passport,
+    verify_passport,
+)
 
 __all__ = [
     "Claim",
@@ -39,6 +48,9 @@ __all__ = [
     "save_passport",
     "compute_seal",
     "verify_passport",
+    "compute_hmac",
+    "key_from_env",
+    "key_id",
 ]
 
 __version__ = "0.1.0"
