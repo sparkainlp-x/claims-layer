@@ -9,7 +9,7 @@ claim --kind----> ANNOUNCEMENT | MODEL | MEASUREMENT | HYPOTHESIS | INFERENCE
       --tag-----> SYNTHETIC | REPORTED | TARGET | UNRUN
       --checks--> file_sha256 | json_value | text_contains
       --status--> VERIFIED | SUPPORTED | UNVERIFIED | REFUTED   (computed by the checks)
-passport --seal-> SHA-256 of the record + every evidence file; verify_passport() re-checks it
+passport --seal-> SHA-256 of the record + every evidence file; optional HMAC-SHA256 keyed seal; verify_passport() re-checks it
 ```
 
 ## Quick start
@@ -17,7 +17,7 @@ passport --seal-> SHA-256 of the record + every evidence file; verify_passport()
 ```bash
 python demo.py           # honest passport SEALED; inflated number REFUTED; edits and data changes detected
 python tests.py          # original script-style checks
-pip install -r requirements-dev.txt && python -m pytest    # 32 tests, warnings are errors
+pip install -r requirements-dev.txt && python -m pytest    # 127 tests, warnings are errors
 CSEQ_DIR=../digital-to-wave-cseq python demo_cseq.py         # passport over a cseq_wave v0.2.0 run record
 ```
 
@@ -27,6 +27,37 @@ CSEQ_DIR=../digital-to-wave-cseq python demo_cseq.py         # passport over a c
 
 - **`demo.py`:** the honest passport seals. The passport claiming the mean is 0.5 higher has that claim REFUTED and is issued UNSEALED. `verify_passport()` accepts the honest passport, and rejects it after a claim is edited, and after one value is appended to the data file.
 - **`demo_cseq.py`** (digital-to-wave-cseq at `ad8ea3a`, seed 7): main verdict VERIFIED_RECALL, control CONFABULATION_SUSPECTED, fidelity 1.0 and cue overlap 0.2576 all VERIFIED against the run record. The README inference is SUPPORTED (text citation only), the hypothesis is UNVERIFIED, and the passport SEALS and re-verifies. As received, this demo **failed**: two of its checks pointed at a key and a README phrase that no longer exist in digital-to-wave-cseq, so the layer correctly REFUTED them, while the original README said the passport sealed.
+
+## Keyed seal (v0.2.0, optional)
+
+```python
+from claims_layer import build_passport, key_from_env, verify_passport
+key = key_from_env()            # CLAIMS_LAYER_SEAL_KEY, or pass bytes (at least 16)
+p = build_passport(title, subject, claims, base_dir, key=key)
+ok, problems = verify_passport(p, base_dir, key=key)
+```
+
+The passport records `seal_type` (`sha256` or `hmac-sha256`) and a 16-hex `key_id` fingerprint. The key itself is never stored. Verification compares in constant time. If you pass a key, an unkeyed or stripped passport is refused, so the check can't be downgraded. Without the key, a full rewrite of claims and evidence is caught. Unkeyed passports, including v0.1.0 ones, still verify as before.
+
+**HMAC is a shared secret, not a public-key signature.** Anyone who holds the key can forge a valid seal, and a verifier must hold the same key. Use real signatures when the verifier must not be able to sign.
+
+## Firewall detection (v0.2.0)
+
+Claim text is normalised first: Unicode NFKC, case, zero-width characters, leetspeak digits, hyphens and spelled-out letters. It is then refused for any of these:
+
+- strong claim verbs in any form (prove, guarantee, validate) and their misspellings;
+- weak verbs next to an intensifier ("conclusively demonstrates");
+- certainty phrases ("beyond doubt", "settled science");
+- banned compounds ("production ready", "quantum advantage", "real-world performance").
+
+A single in-clause negation exempts a phrase ("does not prove"). "Not only", double negatives and certainty phrases are still refused. When in doubt, it refuses.
+
+| corpus | refused, should refuse | refused, should pass |
+|---|---:|---:|
+| development (used for tuning) | 43/43 | 0/30 |
+| held-out (written before tuning) | 25/25 | 2/25 |
+
+The two held-out false refusals are "The guarantee section of the licence disclaims warranty." and "The validation set has 200 points.". **These rates are optimistic:** I wrote both corpora, so neither is independent. Bypass probes tried afterwards found five sentences that still pass, for example "The effect is beyond question." and "It works, period." They are kept as documented misses in the tests. No word list catches everything.
 
 ## Sealing rules (fail-closed)
 
@@ -40,9 +71,9 @@ CSEQ_DIR=../digital-to-wave-cseq python demo_cseq.py         # passport over a c
 ## Limitations
 
 1. **A seal shows consistency and provenance, not truth.** Fabricated data, honestly hashed, seals fine.
-2. **The seal is an unkeyed hash, not a signature.** `verify_passport()` catches edits and changed evidence, but not a forger who rewrites the claims and the evidence together.
+2. **The default seal is an unkeyed hash.** `verify_passport()` catches edits and changed evidence, but not a forger who rewrites the claims and the evidence together. The optional keyed seal catches that, but only against people who don't hold the shared key.
 3. **The author still writes the checks.** A digest the author takes from their own file only shows the file hasn't changed since.
-4. **The firewall is a phrase list.** Paraphrases and misspellings pass it ("conclusively demonstrates"). It also refuses negated phrases ("not guaranteed"), which is the safe direction.
+4. **The firewall is still a word list.** It is broader in v0.2.0, but certainty stated in other words passes, and honest uses of "guarantee" or "validation" are refused. Rebuilding an old passport under the stricter firewall can refuse it, which `verify_passport()` reports as a failure.
 5. **The author chooses the claim kind.** The numeric-claim rule limits kind-swapping, but it can't catch a claim that states no number.
 
 ## How this differs from related repositories

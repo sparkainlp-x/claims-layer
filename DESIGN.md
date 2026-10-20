@@ -95,7 +95,7 @@ the same evidence can re-check it with `verify_passport()`.
    implementation under AGPL, with the demos and the negative cases
    included, and let one institution go first.
 
-5. **The seal is an unkeyed hash, not a signature.** Anyone who edits a
+5. **The default seal is an unkeyed hash, not a signature** (v0.2.0 adds an optional HMAC-SHA256 seal, which is a shared secret: anyone with the key can forge it). Anyone who edits a
    passport can recompute it. `verify_passport()` catches edits that do
    not also rewrite the evidence, but a forger who changes claims and
    evidence together is not caught. Sign the seal separately when the
@@ -104,8 +104,8 @@ the same evidence can re-check it with `verify_passport()`.
    of the expected value) and numbers in the claim text must match the
    checked value, but a digest the author takes from their own file
    only shows the file has not changed since.
-7. **The firewall is a fixed phrase list.** Paraphrases and
-   misspellings pass it. It refuses negated phrases too ("not
-   guaranteed"), which is the safe direction.
+7. **The firewall is a word list with normalisation.** v0.2.0 catches
+   inflections, misspellings and intensified paraphrases, but certainty
+   stated in other words still passes. Measured rates are in the README.
 
 All examples and demos use SYNTHETIC data.
