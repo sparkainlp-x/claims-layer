@@ -6,7 +6,7 @@ terms. It screens the passport at build time; a violation means the
 passport is NOT built -- refused, not edited.
 
 Rules:
-  R1  A SYNTHETIC claim may not assert a real-world measurement
+  R1  A claim not tagged REPORTED may not assert a real-world measurement
       ("measured on real patients", "field data shows", ...).
   R2  A MEASUREMENT claim may not carry the UNRUN tag (a measurement
       that was never run is not a measurement).
@@ -14,6 +14,13 @@ Rules:
       "100% accurate", "scientifically proven", "miracle") are
       refused in any claim, whatever its tag: the layer exists so
       that claims earn their strength from checks, not adverbs.
+      The list also holds the org's banned terms (validated,
+      production-ready, quantum advantage, real-world performance).
+
+Limits: this is a fixed phrase list. Paraphrases ("conclusively
+demonstrates") and misspellings pass it. It is not negation-aware on
+purpose: "not guaranteed" is refused too, which is the safe direction
+(rephrase the disclaimer).
 """
 
 import re
@@ -27,6 +34,8 @@ _R1_PATTERNS = [
 _R3_PATTERNS = [
     r"\bproves\b", r"\bproven\b", r"guaranteed", r"100%\s*accurate",
     r"scientifically proven", r"miracle", r"revolutionary breakthrough",
+    r"\bvalidated\b", r"production[- ]ready", r"quantum advantage",
+    r"real[- ]world performance",
 ]
 
 
@@ -38,10 +47,10 @@ def screen_claim(claim):
     """Return the list of firewall violations for one claim ([] = clean)."""
     hits = []
     text = claim.text
-    if claim.tag == "SYNTHETIC":
+    if claim.tag != "REPORTED":
         for pat in _R1_PATTERNS:
             if re.search(pat, text, flags=re.IGNORECASE):
-                hits.append(f"R1 synthetic claim asserts real measurement: /{pat}/")
+                hits.append(f"R1 {claim.tag} claim asserts real measurement: /{pat}/")
     if claim.kind == "MEASUREMENT" and claim.tag == "UNRUN":
         hits.append("R2 MEASUREMENT claim tagged UNRUN")
     for pat in _R3_PATTERNS:
