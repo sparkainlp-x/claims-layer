@@ -15,9 +15,10 @@ import shutil
 from pathlib import Path
 
 import random
+import secrets
 import statistics
 
-from claims_layer import Claim, build_passport, save_passport, verify_passport
+from claims_layer import Claim, build_passport, key_from_env, save_passport, verify_passport
 
 HERE = Path(__file__).parent
 SUBJ = HERE / "demo_subject"
@@ -101,9 +102,26 @@ def main():
     ok_file, why_file = verify_passport(p1, SUBJ)
     csv.write_bytes(original)
     print(f"--- Passport 1 after one value is appended to the data file: {ok_file} {why_file}")
+    # keyed seal: key from CLAIMS_LAYER_SEAL_KEY, or a throwaway key for this run
+    key = key_from_env() or secrets.token_bytes(32)
+    pk = build_passport("Synthetic sensor experiment", "demo_subject", good, SUBJ, key=key)
+    okk, _ = verify_passport(pk, SUBJ, key=key)
+    record = json.loads((SUBJ / "run_record.json").read_text())
+    record["mean"] = mean + 0.5
+    (SUBJ / "run_record.json").write_text(json.dumps(record, indent=2), encoding="utf-8")
+    forged_claims = [Claim("M1", f"Dataset mean is {mean + 0.5:.4f} (seeded synthetic sensor data)",
+                           "MEASUREMENT", "SYNTHETIC",
+                           checks=[{"kind": "json_value", "path": "run_record.json", "key": "mean",
+                                    "expected": round(mean + 0.5, 4), "tol": 1e-3}])] + good[1:]
+    forged = build_passport("Synthetic sensor experiment", "demo_subject", forged_claims, SUBJ,
+                            key=secrets.token_bytes(32))
+    forged["key_id"] = pk["key_id"]
+    ok_forged, why_forged = verify_passport(forged, SUBJ, key=key)
+    print(f"--- Keyed passport (key id {pk['key_id']}) re-verified: {okk}")
+    print(f"--- Full rewrite of record + claim without the key: {ok_forged} {why_forged}")
     print()
 
-    ok = (p1["sealed"] and not p2["sealed"]
+    ok = (p1["sealed"] and okk and not ok_forged and not p2["sealed"]
           and p2["claims"][0]["status"] == "REFUTED"
           and ok1 and not ok_edit and not ok_file)
     print("RESULT:", "PASS -- honest passport SEALED, tampered passport REFUTED and UNSEALED"
