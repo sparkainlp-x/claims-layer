@@ -183,9 +183,11 @@ def test_firewall_allows_reported_real_measurement_and_unrun_rule():
 
 
 def test_firewall_known_limits():
-    """Documented: paraphrases pass, and negated phrases are refused."""
-    assert screen_claim(Claim("x", "conclusively demonstrates the effect", "MODEL", "SYNTHETIC")) == []
-    assert screen_claim(Claim("x", "results are not guaranteed", "MODEL", "SYNTHETIC"))
+    """Documented: a word list misses unlisted paraphrases, and an
+    in-clause negation exempts a phrase."""
+    assert screen_claim(Claim("x", "the effect is beyond question", "MODEL", "SYNTHETIC")) == []
+    assert screen_claim(Claim("x", "results are not guaranteed", "MODEL", "SYNTHETIC")) == []
+    assert screen_claim(Claim("x", "conclusively demonstrates the effect", "MODEL", "SYNTHETIC"))
 
 
 # --- html ---------------------------------------------------------------
@@ -218,7 +220,7 @@ def test_demo_cseq_passes(monkeypatch, tmp_path):
 def test_stdlib_only():
     import ast
 
-    stdlib = {"hashlib", "hmac", "unicodedata", "json", "math", "re", "html", "pathlib", "random", "statistics",
+    stdlib = {"hashlib", "hmac", "unicodedata", "secrets", "json", "math", "re", "html", "pathlib", "random", "statistics",
               "shutil", "os", "subprocess", "sys", "tempfile"}
     for f in list((ROOT / "claims_layer").glob("*.py")) + [ROOT / "demo.py", ROOT / "demo_cseq.py"]:
         for node in ast.walk(ast.parse(f.read_text(encoding="utf-8"))):
