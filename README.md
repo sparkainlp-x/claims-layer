@@ -1,5 +1,7 @@
 # Claims Layer
 
+Software DOI for v0.2.0: [10.5281/zenodo.23530283](https://doi.org/10.5281/zenodo.23530283) (all versions: [10.5281/zenodo.23530282](https://doi.org/10.5281/zenodo.23530282)).
+
 A small, standard-library Python reference implementation of **machine-checkable evidence passports for claims**. Each claim states what *kind* of claim it is, what evidence tag stands behind it, and which machine-runnable checks were run against its cited records. The status comes from running those checks, not from the author typing it in.
 
 **Evidence label: SYNTHETIC.** The demos use seeded synthetic data. Nothing here has been tried on real publications or by any institution.

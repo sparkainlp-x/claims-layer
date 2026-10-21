@@ -8,6 +8,14 @@ authors:
     orcid: "https://orcid.org/0009-0000-9778-5374"
     affiliation: "Spark AI NLP, Fredericton, New Brunswick, Canada"
 version: 0.2.0
+doi: "10.5281/zenodo.23530283"
+identifiers:
+  - type: doi
+    value: "10.5281/zenodo.23530283"
+    description: "Version DOI for v0.2.0"
+  - type: doi
+    value: "10.5281/zenodo.23530282"
+    description: "Concept DOI (all versions)"
 date-released: "2026-10-21"
 license: AGPL-3.0-only
 repository-code: "https://github.com/sparkainlp-x/claims-layer"

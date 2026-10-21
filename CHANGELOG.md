@@ -2,6 +2,7 @@
 
 ## 0.2.0 (2026-10-21)
 
+- Archived on Zenodo: version DOI [10.5281/zenodo.23530283](https://doi.org/10.5281/zenodo.23530283), concept DOI [10.5281/zenodo.23530282](https://doi.org/10.5281/zenodo.23530282).
 - Optional HMAC-SHA256 keyed seal (`key=` or `CLAIMS_LAYER_SEAL_KEY`). The passport records `seal_type` and a `key_id` fingerprint, never the key. Verification is constant-time, refuses downgrades, and catches a full rewrite of claims and evidence by anyone without the key. HMAC is a shared secret, not a public-key signature. Unkeyed and v0.1.0 passports still verify.
 - Firewall R3 rewritten: normalisation (`normalize.py`), inflected claim verbs, misspellings by edit distance with an allowlist, intensifier plus verb, certainty phrases, banned compounds, and conservative clause-scoped negation. On the held-out corpus it refuses 25/25 sentences that should be refused and 2/25 that should pass. Known misses are documented.
 - `demo.py` shows the keyed seal and a keyless full rewrite being caught.
