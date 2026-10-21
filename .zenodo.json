@@ -1,6 +1,7 @@
 {
   "title": "Claims Layer: machine-checkable evidence passports for claims",
   "version": "0.2.0",
+  "publication_date": "2026-10-21",
   "upload_type": "software",
   "description": "<p>Standard-library Python reference implementation of machine-checkable evidence passports for claims. Each claim carries a kind (announcement, model, measurement, hypothesis, inference), an evidence tag (SYNTHETIC, REPORTED, TARGET, UNRUN) and machine-run checks (file digests, run-record values with capped tolerance and text binding, textual citations). Statuses are computed by the checks. A passport seals only when nothing is refuted and every measurement and numeric claim is verified; the seal is a SHA-256 over the record and its evidence files, and verify_passport() re-checks it. An optional HMAC-SHA256 keyed seal (shared secret, not a public-key signature) detects full rewrites by anyone without the key. A normalising claims firewall is measured on development and held-out corpora. A seal shows consistency and provenance, not ground truth, and is an unkeyed hash, not a signature. Demos use SYNTHETIC data.</p>",
   "creators": [
