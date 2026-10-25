@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Documentation only: added a Provenance statement that says which files are derived from the package received under Mun Seok Lee's name and by how much, that he is not an author of this release and has not endorsed it.
+
 ## 0.2.0 (2026-10-21)
 
 - Archived on Zenodo: version DOI [10.5281/zenodo.23530283](https://doi.org/10.5281/zenodo.23530283), concept DOI [10.5281/zenodo.23530282](https://doi.org/10.5281/zenodo.23530282).
