@@ -85,9 +85,13 @@ The two held-out false refusals are "The guarantee section of the licence discla
 - [measurement-trail](https://github.com/sparkainlp-x/measurement-trail) hash-chains processing steps. This repo doesn't chain records; it seals one passport together with the evidence files it cites.
 - The re-compute-before-display idea comes from [sparkholo-coherence-agent](https://github.com/sparkainlp-x/sparkholo-coherence-agent), and the refuse-don't-edit claims firewall from [spark-iis-api](https://github.com/sparkainlp-x/spark-iis-api).
 
+## Provenance
+
+A package received under Mun Seok Lee's name, which lists him as sole author under AGPL-3.0-only, is kept unchanged in [spec/](spec/). We could not independently verify who wrote it. The main code in this repository is derived from it. `claims_layer/model.py` and `tests.py` are byte-identical to the received files. `claims_layer/__init__.py` (about 74%), `checks.py` (58%), `passport.py` (53%) and `firewall.py` (45%) are edited and extended, and `demo.py` and `demo_cseq.py` are about 78% and 84% similar. `normalize.py`, the keyed seal and the tests under `tests/` were added by this project. Line similarity here comes from a plain diff, not from a review of intent. [CHANGELOG.md](CHANGELOG.md) lists the changes. Mun Seok Lee is not an author of this release, and he has not reviewed or endorsed this software.
+
 ## Acknowledgements
 
-The `demo_cseq.py` example passports results from digital-to-wave-cseq, whose recall-fidelity readout uses the C_seq phase-coherence formula from Mun Seok Lee's *Coherent Sequence Unified Coupled-Field Theory* (2026 preprint). He has not reviewed or endorsed this software. The original package as received is kept unchanged in [spec/](spec/).
+Thanks to Mun Seok Lee for the package received under his name (see Provenance above). This is an acknowledgement only: it implies no endorsement of this code or its conclusions.
 
 ## How to cite
 
